@@ -1,7 +1,7 @@
 # React Substitute
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@vojtechportes/react-substitute" target="_blank"><img src="https://badge.fury.io/js/%40vojtechportes%2Freact-substitute.svg" alt="npm version" /></a>
+<a href="https://badge.fury.io/js/@vojtechportes%2Freact-substitute"><img src="https://badge.fury.io/js/@vojtechportes%2Freact-substitute.svg" alt="npm version" height="18"></a>
 </p>
 
 Highly configurable react substitute utility that can perform placeholder replacement by context values or react components.
