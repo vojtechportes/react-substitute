@@ -24,7 +24,7 @@ yarn install @vojtechportes/react-substitute
 or
 
 ```bash
-npm isntall @vojtechportes/react-substitute
+npm install @vojtechportes/react-substitute
 ```
 
 ## API
