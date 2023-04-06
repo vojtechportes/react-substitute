@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren } from 'react';
 
 export interface ILinkProps {
   to?: string;
@@ -6,7 +6,5 @@ export interface ILinkProps {
 
 export const Link: React.FC<PropsWithChildren<ILinkProps>> = ({
   children,
-  to
-}) => {
-  return <a href={to}>{children}</a>;
-};
+  to,
+}) => <a href={to}>{children}</a>;

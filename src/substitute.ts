@@ -7,6 +7,7 @@ export interface SubstituteOptionsProps {
   modifierSeparator?: string;
   contextSeparator?: string;
   context?: unknown;
+  forceReplace?: boolean;
   transform?: (
     value: string | number,
     placeholder: string,
@@ -25,7 +26,8 @@ export interface SubstituteOptionsProps {
  * modifiers and local context, that can be handeled in transform function. Format of a modifier in placeholder is
  * {placeholder|modifier:context}. Modifier and context separators can be changed in options by changing modifierSeparator
  * property. If placeholder value is not matched with any key in context object, empty string is
- * returned.
+ * returned, unless forceReplace is set to true. In that case, all placeholders will be processed and can be
+ * replaced using custom logic in transform function.
  *
  * @param str
  * @param options
@@ -43,7 +45,7 @@ export const substitute = (
     returnReactElement,
     components,
   } = options;
-  const { transform } = options;
+  const { transform, forceReplace } = options;
 
   if (!pattern) {
     pattern = new RegExp(/\{([^{}]+)\}/g);
@@ -144,13 +146,17 @@ export const substitute = (
           }
         }
 
-        return String(
-          transform(value, placeholder, key, modifiers, parsedContext)
-        );
+        if (value || !!forceReplace) {
+          return String(
+            transform(value || '', placeholder, key, modifiers, parsedContext)
+          );
+        }
+
+        return '';
       }
 
-      if (value) {
-        return String(value);
+      if (value || !!forceReplace) {
+        return String(value || '');
       }
 
       return '';
