@@ -4,154 +4,166 @@
 <a href="https://badge.fury.io/js/@vojtechportes%2Freact-substitute"><img src="https://badge.fury.io/js/@vojtechportes%2Freact-substitute.svg" alt="npm version" height="18"></a>
 </p>
 
-Highly configurable react substitute utility that can perform placeholder replacement by context values or react components.
+Highly configurable placeholder substitution for React: replace
+`{placeholders}` in a string using values from a context object **or**
+render the result as **React nodes** (with component placeholders like
+`<0>...</0>`).
 
-## Description
+---
 
-React substitute replaces placeholders in a string. Default placeholder format is {placeholder}
-and can be changed in options by changing patter property. Placeholders can also contain
-modifiers and local context, that can be handeled in transform function. Format of a modifier in placeholder is
-{placeholder|modifier:context}. Modifier and context separators can be changed in options by changing modifierSeparator
-property. If placeholder value is not matched with any key in context object, empty string is
-returned, unless forceReplace is set to true. In that case, all placeholders will be processed and can be
-replaced using custom logic in transform function.
+## Features
 
-## Installation
+- Replace `{placeholders}` using a context object (supports **nested
+  objects** via dot-path keys)
+- Optional `transform()` hook for custom replacement logic
+- Supports **modifiers** and a single **item-level context** inside
+  placeholders
+- Can return either a **string** or **React nodes**
+- Customizable placeholder separators and RegExp pattern
+
+---
+
+## Install
 
 ```bash
-yarn install @vojtechportes/react-substitute
+npm i @vojtechportes/react-substitute
+# or
+yarn add @vojtechportes/react-substitute
 ```
 
-or
+Node: \>= 10
 
-```bash
-npm install @vojtechportes/react-substitute
+---
+
+## Quick start (string output)
+
+```ts
+import { reactSubstitute } from '@vojtechportes/react-substitute';
+
+const text = 'Hello {user.name}! You have {count} messages.';
+
+const out = reactSubstitute(text, {
+  context: {
+    user: { name: 'John' },
+    count: 3,
+  },
+});
+
+console.log(out);
+// "Hello John! You have 3 messages."
 ```
+
+Nested objects are flattened internally, so `{user.name}` works out of
+the box.
+
+Unmatched placeholders are replaced with an empty string by default.
+
+---
+
+## Placeholder syntax
+
+Default format:
+
+- `{key}`
+- `{key|modifier1|modifier2:context}`
+
+Defaults: - `modifierSeparator`: `|` - `contextSeparator`: `:` -
+`pattern`: `/\{([^{}]+)\}/g`
+
+### Modifiers
+
+Everything after `|` is collected into `modifiers: string[]` and passed
+to `transform()`.
+
+### Item-level context
+
+Only **one** context segment is supported (after `:`). If more are
+present, only the first is used.
+
+`contextType` options:
+
+- `'normal'` → string (default)
+- `'list'` → comma-separated list → `string[]`
+- `'object'` → JSON parsed object
+
+---
 
 ## API
 
-### Arguments
+### `reactSubstitute(str, options)`
 
-1. str (string): String with placeholders to be replaced
-2. options (object): Options object
+```ts
+import { reactSubstitute } from '@vojtechportes/react-substitute';
 
-#### Options
-
-- `pattern` (RegExp): Placeholder pattern - defaults to `{}`<br />
-- `modifierSeparator` (string): Modifier separator - defaults to `|`<br />
-- `contextSeparator` (string): Local context separator - defaults to `:`<br />
-- `context` (unknown): Object containing structured json object containing values used to replace placeholders - defaults to `{}`<br />
-- `forceReplace` (boolean): If set to `true`, placeholders will be processed even if their values are not in context object - defaults to `undefined`<br />
-- `transform` (fn): Transform function with arguments value, placeholder, key, modifiers and context that returns string or number - defaults to `undefined`<br />
-- `contextType` ('list' | 'normal' | 'object'): Defines how context should be parsed. List will be split by commas, normal will be returned as is - defaults to `normal`<br />
-- `returnReactElement` (boolean): When true react element will be returned, otherwise string - defaults to `false`<br />
-- `components` (any[]): React components to be used for substitution: defaults to `undefined`
-
-## Examples
-
-### With context object
-
-```typescript
-import { substitute } from '@vojtechportes/react-substitute';
-import React, { PropsWithChildren } from 'react';
-
-export interface ILinkProps {
-  to?: string;
-}
-
-export const Link: React.FC<PropsWithChildren<ILinkProps>> = ({
-  children,
-  to,
-}) => <a href={to}>{children}</a>;
-
-export default function App() {
-  const text =
-    'Lorem ipsum dolor sit amet {user|123, John Doe}, {user|456, Jane Doe}';
-
-  const substitutedText = substitute(text, {
-    transform: (value, _placeholder, key, _modifier, context) => {
-      if (key === 'user') {
-        const [userId, userName] = context;
-
-        return `<0 to="/users/${userId}">${userName}</0>`;
-      }
-
-      return value;
-    },
-    context: {
-      user: '',
-    },
-    contextSeparator: '|',
-    modifierSeparator: ':',
-    contextType: 'list',
-    components: [<Link />],
-    returnReactElement: true,
-  });
-
-  return <div className="App">{substitutedText}</div>;
-
-  ReactDOM.render(<App />, document.getElementById('root'));
-}
+const result = reactSubstitute('...', options);
 ```
 
-### Without context object and with forceReplace set to true
+Return type:
 
-```typescript
-import { substitute } from '@vojtechportes/react-substitute';
+- `string` (default)
+- `React.ReactNode` when `returnReactElement: true`
+
+---
+
+## Options
+
+- `pattern?: RegExp`
+- `modifierSeparator?: string`
+- `contextSeparator?: string`
+- `context?: unknown`
+- `forceReplace?: boolean`
+- `transform?: (value, placeholder, key, modifiers?, context?) => string | number`
+- `contextType?: 'list' | 'normal' | 'object'`
+- `returnReactElement?: boolean`
+- `components?: any[]`
+
+---
+
+## Example: React output with transform
+
+```tsx
 import React, { PropsWithChildren } from 'react';
+import { reactSubstitute } from '@vojtechportes/react-substitute';
 
-export interface ILinkProps {
-  to?: string;
-}
-
-export const Link: React.FC<PropsWithChildren<ILinkProps>> = ({
-  children,
-  to,
-}) => <a href={to}>{children}</a>;
-
-export const FauxLink: React.FC<PropsWithChildren<unknown>> = ({
-  children,
-}) => (
-  <span style={{ textDecoration: 'underline', color: 'blue' }}>{children}</span>
+type LinkProps = PropsWithChildren<{ to: string }>;
+const Link: React.FC<LinkProps> = ({ to, children }) => (
+  <a href={to}>{children}</a>
 );
 
-export default function App() {
-  const text =
-    'Lorem ipsum dolor sit amet {user|123, John Doe}, {user|456, Jane Doe} {token|789} {group|011} {group}';
+const text = 'Users: {user:123, John Doe}, {user:456, Jane Doe}';
 
-  const substitutedText = substitute(text, {
-    transform: (value, _placeholder, key, _modifier, context) => {
-      if (key === 'user') {
-        const [userId, userName] = context;
+const nodes = reactSubstitute(text, {
+  contextType: 'list',
+  context: { user: '' },
 
-        return `<0 to="/users/${userId}">${userName}</0>`;
-      }
+  transform: (_value, _placeholder, key, _modifiers, itemContext) => {
+    if (key === 'user') {
+      const [id, name] = itemContext as string[];
+      return `<0 to="/users/${id}">${name}</0>`;
+    }
+    return '';
+  },
 
-      if (key === 'token') {
-        const [tokenId] = context;
-
-        return `<1>${key}: ${tokenId}</1>`;
-      }
-
-      const [identifier] = context;
-
-      if (identifier) {
-        return `<1>${identifier}</1>`;
-      }
-
-      return value;
-    },
-    forceReplace: true,
-    contextSeparator: '|',
-    modifierSeparator: ':',
-    contextType: 'list',
-    components: [<Link />, <FauxLink />],
-    returnReactElement: true,
-  });
-
-  return <div className="App">{substitutedText}</div>;
-}
-
-ReactDOM.render(<App />, document.getElementById('root'));
-}
+  components: [<Link to="" />],
+  returnReactElement: true,
+});
 ```
+
+Your `transform()` can output numeric tags like `<0>...</0>`. These are
+replaced by the corresponding element from `components[]`.
+
+---
+
+## Development
+
+```bash
+yarn start
+yarn build
+yarn checkAll
+```
+
+---
+
+## License
+
+MIT

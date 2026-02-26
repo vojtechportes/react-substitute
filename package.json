@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -36,9 +36,18 @@
   "description": "React substitute utility",
   "keywords": [
     "react",
-    "substitute",
-    "typescript"
+    "placeholder",
+    "string interpolation",
+    "template",
+    "i18n",
+    "rich text",
+    "substitution",
+    "react nodes",
+    "component interpolation"
   ],
+  "bugs": {
+    "url": "https://github.com/vojtechportes/react-substitute/issues"
+  },
   "author": {
     "email": "vojtech.v.portes@gmail.com",
     "name": "Vojtech Portes",
